@@ -44,9 +44,13 @@ struct ScoreText;
 #[derive(Component)]
 struct Score(u32);
 
+enum PlayerPosition {
+    Left,
+    Right,
+}
 /// component for a player
 #[derive(Component)]
-struct Player(u8);
+struct Player(PlayerPosition);
 
 #[derive(Component)]
 struct Ball;
@@ -129,7 +133,7 @@ fn spawn_players(mut commands: Commands) {
                 ..default()
             }),
         ))
-        .insert(Player(0));
+        .insert(Player(PlayerPosition::Left));
 
     commands
         .spawn_bundle(GeometryBuilder::build_as(
@@ -140,7 +144,7 @@ fn spawn_players(mut commands: Commands) {
                 ..default()
             }),
         ))
-        .insert(Player(1));
+        .insert(Player(PlayerPosition::Right));
 }
 
 // function that applies gravity to objects that have a mass
@@ -169,17 +173,20 @@ fn controls(
     const SPEED: f32 = 100.0;
 
     for (player, mut transform) in query.iter_mut() {
-        if player.0 == 0 {
-            if keys.pressed(KeyCode::W) {
-                transform.translation.y += SPEED * time.delta_seconds()
-            } else if keys.pressed(KeyCode::S) {
-                transform.translation.y -= SPEED * time.delta_seconds()
+        match player.0 {
+            PlayerPosition::Left => {
+                if keys.pressed(KeyCode::W) {
+                    transform.translation.y += SPEED * time.delta_seconds()
+                } else if keys.pressed(KeyCode::S) {
+                    transform.translation.y -= SPEED * time.delta_seconds()
+                }
             }
-        } else if player.0 == 1 {
-            if keys.pressed(KeyCode::Up) {
-                transform.translation.y += SPEED * time.delta_seconds()
-            } else if keys.pressed(KeyCode::Down) {
-                transform.translation.y -= SPEED * time.delta_seconds()
+            PlayerPosition::Right => {
+                if keys.pressed(KeyCode::Up) {
+                    transform.translation.y += SPEED * time.delta_seconds()
+                } else if keys.pressed(KeyCode::Down) {
+                    transform.translation.y -= SPEED * time.delta_seconds()
+                }
             }
         }
     }
