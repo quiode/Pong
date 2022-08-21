@@ -4,6 +4,9 @@ use bevy::{
 };
 use bevy_prototype_lyon::prelude::*;
 
+const WIDTH: f32 = 852.0;
+const HEIGHT: f32 = 480.0;
+
 // main function
 fn main() {
     // When building for WASM, print panics to the browser console
@@ -15,8 +18,8 @@ fn main() {
             title: "Pong".to_string(),
             cursor_visible: false,
             mode: WindowMode::Windowed,
-            width: 852.0,
-            height: 480.0,
+            width: WIDTH,
+            height: HEIGHT,
             resizable: false,
             ..default()
         })
@@ -171,20 +174,26 @@ fn controls(
     time: Res<Time>,
 ) {
     const SPEED: f32 = 100.0;
+    const BORDER_STOP: f32 = 290.0;
 
     for (player, mut transform) in query.iter_mut() {
         match player.0 {
             PlayerPosition::Left => {
-                if keys.pressed(KeyCode::W) {
+                if keys.pressed(KeyCode::W) && transform.translation.y + BORDER_STOP < WIDTH / 2.0 {
                     transform.translation.y += SPEED * time.delta_seconds()
-                } else if keys.pressed(KeyCode::S) {
+                } else if keys.pressed(KeyCode::S)
+                    && transform.translation.y - BORDER_STOP > -(WIDTH / 2.0)
+                {
                     transform.translation.y -= SPEED * time.delta_seconds()
                 }
             }
             PlayerPosition::Right => {
-                if keys.pressed(KeyCode::Up) {
+                if keys.pressed(KeyCode::Up) && transform.translation.y + BORDER_STOP < WIDTH / 2.0
+                {
                     transform.translation.y += SPEED * time.delta_seconds()
-                } else if keys.pressed(KeyCode::Down) {
+                } else if keys.pressed(KeyCode::Down)
+                    && transform.translation.y - BORDER_STOP > -(WIDTH / 2.0)
+                {
                     transform.translation.y -= SPEED * time.delta_seconds()
                 }
             }
