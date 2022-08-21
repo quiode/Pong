@@ -6,6 +6,10 @@ use bevy_prototype_lyon::prelude::*;
 
 // main function
 fn main() {
+    // When building for WASM, print panics to the browser console
+    #[cfg(target_arch = "wasm32")]
+    console_error_panic_hook::set_once();
+
     App::new()
         .insert_resource(WindowDescriptor {
             title: "Pong".to_string(),
@@ -28,6 +32,7 @@ fn main() {
         .add_system(gravity)
         .add_system(velocity)
         .add_system(close_on_esc)
+        .add_system(controls)
         .run();
 }
 
@@ -41,7 +46,7 @@ struct Score(u32);
 
 /// component for a player
 #[derive(Component)]
-struct Player;
+struct Player(u8);
 
 #[derive(Component)]
 struct Ball;
@@ -115,23 +120,27 @@ fn spawn_players(mut commands: Commands) {
         ..default()
     };
 
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &shape,
-        DrawMode::Fill(FillMode::color(Color::WHITE)),
-        Transform::from_translation(Vec3 {
-            x: -410.0,
-            ..default()
-        }),
-    ));
+    commands
+        .spawn_bundle(GeometryBuilder::build_as(
+            &shape,
+            DrawMode::Fill(FillMode::color(Color::WHITE)),
+            Transform::from_translation(Vec3 {
+                x: -410.0,
+                ..default()
+            }),
+        ))
+        .insert(Player(0));
 
-    commands.spawn_bundle(GeometryBuilder::build_as(
-        &shape,
-        DrawMode::Fill(FillMode::color(Color::WHITE)),
-        Transform::from_translation(Vec3 {
-            x: 410.0,
-            ..default()
-        }),
-    ));
+    commands
+        .spawn_bundle(GeometryBuilder::build_as(
+            &shape,
+            DrawMode::Fill(FillMode::color(Color::WHITE)),
+            Transform::from_translation(Vec3 {
+                x: 410.0,
+                ..default()
+            }),
+        ))
+        .insert(Player(1));
 }
 
 // function that applies gravity to objects that have a mass
@@ -148,5 +157,30 @@ fn velocity(mut query: Query<(&Velocity, &mut Transform)>, time: Res<Time>) {
     for (velocity, mut transform) in query.iter_mut() {
         transform.translation.y += velocity.y * time.delta_seconds();
         transform.translation.x += velocity.x * time.delta_seconds();
+    }
+}
+
+// reacts to keyboard input
+fn controls(
+    keys: Res<Input<KeyCode>>,
+    mut query: Query<(&Player, &mut Transform)>,
+    time: Res<Time>,
+) {
+    const SPEED: f32 = 100.0;
+
+    for (player, mut transform) in query.iter_mut() {
+        if player.0 == 0 {
+            if keys.pressed(KeyCode::W) {
+                transform.translation.y += SPEED * time.delta_seconds()
+            } else if keys.pressed(KeyCode::S) {
+                transform.translation.y -= SPEED * time.delta_seconds()
+            }
+        } else if player.0 == 1 {
+            if keys.pressed(KeyCode::Up) {
+                transform.translation.y += SPEED * time.delta_seconds()
+            } else if keys.pressed(KeyCode::Down) {
+                transform.translation.y -= SPEED * time.delta_seconds()
+            }
+        }
     }
 }

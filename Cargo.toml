@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bevy = "0.8.0"
 bevy_prototype_lyon = "0.6.0"
+console_error_panic_hook = "0.1.7"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
