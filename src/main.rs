@@ -36,6 +36,10 @@ fn main() {
         .add_system(velocity)
         .add_system(close_on_esc)
         .add_system(controls)
+        .add_system(out_of_bounds_detector)
+        .add_system(collision_detector)
+        .add_system(scoreboard_changer)
+        .add_event::<ScoreEvent>()
         .run();
 }
 
@@ -47,7 +51,10 @@ struct ScoreText;
 #[derive(Component)]
 struct Score(u32);
 
+/// position of the player
+#[derive(Default)]
 enum PlayerPosition {
+    #[default]
     Left,
     Right,
 }
@@ -55,19 +62,24 @@ enum PlayerPosition {
 #[derive(Component)]
 struct Player(PlayerPosition);
 
+/// a ball
 #[derive(Component)]
 struct Ball;
 
-// mass, gets influenced by gravity
+/// mass, gets influenced by gravity
 #[derive(Component)]
 struct Mass(f32);
 
-// velocity
+/// velocity
 #[derive(Component)]
 struct Velocity {
     x: f32,
     y: f32,
 }
+
+/// score change event, PlayerPosition determines which player scored the point
+#[derive(Default)]
+struct ScoreEvent(PlayerPosition);
 
 /// setup
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -199,4 +211,19 @@ fn controls(
             }
         }
     }
+}
+
+/// checks if the ball is out of bounds and if so emit a score event and reset the ball
+fn out_of_bounds_detector() {
+    todo!()
+}
+
+/// checks if the ball collides with either the top, bottom or one of the players and if so, reflect the ball
+fn collision_detector() {
+    todo!()
+}
+
+/// listen for score changes and react to them
+fn scoreboard_changer(event: EventReader<ScoreEvent>) {
+    todo!()
 }
