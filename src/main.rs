@@ -1,4 +1,5 @@
 use bevy::{
+    math::Vec3Swizzles,
     prelude::*,
     window::{close_on_esc, WindowMode},
 };
@@ -214,8 +215,25 @@ fn controls(
 }
 
 /// checks if the ball is out of bounds and if so emit a score event and reset the ball
-fn out_of_bounds_detector() {
-    todo!()
+fn out_of_bounds_detector(
+    query: Query<(&Ball, &mut Transform)>,
+    mut event: EventWriter<ScoreEvent>,
+) {
+    let (_ball, mut transform) = query.single();
+
+    // check and emit event
+    if transform.translation.x > WIDTH / 2.0 {
+        event.send(ScoreEvent(PlayerPosition::Right))
+    } else if transform.translation.x < -(WIDTH / 2.0) {
+        event.send(ScoreEvent(PlayerPosition::Left))
+    } else {
+        // exit so the next steps don't apply if the ball isn't out of bounds
+        return;
+    }
+
+    // recenter ball
+    transform.translation.x = 0.0;
+    transform.translation.y = 0.0;
 }
 
 /// checks if the ball collides with either the top, bottom or one of the players and if so, reflect the ball
