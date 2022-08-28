@@ -218,10 +218,10 @@ fn controls(
 
 /// checks if the ball is out of bounds and if so emit a score event and reset the ball
 fn out_of_bounds_detector(
-    mut query: Query<(&Ball, &mut Transform)>,
+    mut query: Query<(&mut Transform, With<Ball>)>,
     mut event: EventWriter<ScoreEvent>,
 ) {
-    let (_ball, mut transform) = query.single_mut();
+    let (mut transform, _) = query.single_mut();
 
     // check and emit event
     if transform.translation.x > WIDTH / 2.0 {
@@ -239,8 +239,8 @@ fn out_of_bounds_detector(
 }
 
 /// checks if the ball collides with either the top, bottom or one of the players and if so, reflect the ball
-fn collision_detector(mut query: Query<(&Ball, &Transform, &mut Mass)>) {
-    let (_ball, transform, mut mass) = query.single_mut();
+fn collision_detector(mut query: Query<(&Transform, &mut Mass, With<Ball>)>) {
+    let (transform, mut mass, _) = query.single_mut();
 
     if transform.translation.y + BALL_RADIUS > HEIGHT / 2.0
         || transform.translation.y - BALL_RADIUS < -(HEIGHT / 2.0)
@@ -250,6 +250,21 @@ fn collision_detector(mut query: Query<(&Ball, &Transform, &mut Mass)>) {
 }
 
 /// listen for score changes and react to them
-fn scoreboard_changer(event: EventReader<ScoreEvent>) {
-    // todo!()
+fn scoreboard_changer(
+    mut events: EventReader<ScoreEvent>,
+    mut query: Query<&mut Text, With<ScoreText>>,
+) {
+    let mut text = query.single_mut();
+
+    for event in events.iter() {
+        let section_val: usize;
+
+        match event.0 {
+            PlayerPosition::Left => section_val = 2,
+            PlayerPosition::Right => section_val = 0,
+        }
+
+        text.sections[section_val].value =
+            (text.sections[section_val].value.parse::<i32>().unwrap() + 1).to_string();
+    }
 }
