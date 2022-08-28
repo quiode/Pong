@@ -4,3 +4,5 @@ rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold"]
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-server-runner"
+
+[target.x86_64-pc-windows-gnu]
