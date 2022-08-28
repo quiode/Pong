@@ -1,5 +1,6 @@
 use bevy::{
     prelude::*,
+    sprite::collide_aabb::collide,
     window::{close_on_esc, WindowMode},
 };
 use bevy_prototype_lyon::prelude::*;
@@ -8,6 +9,8 @@ const WIDTH: f32 = 852.0;
 const HEIGHT: f32 = 480.0;
 
 const BALL_RADIUS: f32 = 8.0;
+const PLAYER_WIDTH: f32 = 5.0;
+const PLAYER_HEIGHT: f32 = 200.0;
 
 // main function
 fn main() {
@@ -138,7 +141,10 @@ fn spawn_ball(mut commands: Commands) {
 // spawns the two players
 fn spawn_players(mut commands: Commands) {
     let shape = shapes::Rectangle {
-        extents: Vec2 { x: 5.0, y: 200.0 },
+        extents: Vec2 {
+            x: PLAYER_WIDTH,
+            y: PLAYER_HEIGHT,
+        },
         ..default()
     };
 
@@ -239,13 +245,35 @@ fn out_of_bounds_detector(
 }
 
 /// checks if the ball collides with either the top, bottom or one of the players and if so, reflect the ball
-fn collision_detector(mut query: Query<(&Transform, &mut Mass, With<Ball>)>) {
-    let (transform, mut mass, _) = query.single_mut();
+fn collision_detector(
+    mut query: Query<(&Transform, &mut Mass, &mut Velocity, With<Ball>)>,
+    players: Query<&Transform, With<Player>>,
+) {
+    let (transform, mut mass, mut velocity, _) = query.single_mut();
 
     if transform.translation.y + BALL_RADIUS > HEIGHT / 2.0
         || transform.translation.y - BALL_RADIUS < -(HEIGHT / 2.0)
     {
         mass.0 *= -1.0;
+    }
+
+    for player in players.iter() {
+        if collide(
+            player.translation,
+            Vec2 {
+                x: PLAYER_WIDTH,
+                y: PLAYER_HEIGHT,
+            },
+            transform.translation,
+            Vec2 {
+                x: BALL_RADIUS * 2.0,
+                y: BALL_RADIUS * 2.0,
+            },
+        )
+        .is_some()
+        {
+            velocity.x *= -1.0;
+        }
     }
 }
 
