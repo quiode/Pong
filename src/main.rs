@@ -133,8 +133,8 @@ fn spawn_ball(mut commands: Commands) {
             DrawMode::Fill(FillMode::color(Color::WHITE)),
             Transform::default(),
         ))
-        .insert(Mass(10.0))
-        .insert(Velocity { x: 50.0, y: 0.0 })
+        .insert(Mass(20.0))
+        .insert(Velocity { x: 600.0, y: 0.0 })
         .insert(Ball);
 }
 
@@ -194,7 +194,7 @@ fn controls(
     mut query: Query<(&Player, &mut Transform)>,
     time: Res<Time>,
 ) {
-    const SPEED: f32 = 100.0;
+    const SPEED: f32 = 400.0;
     const BORDER_STOP: f32 = 290.0;
 
     for (player, mut transform) in query.iter_mut() {
