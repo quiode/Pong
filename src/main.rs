@@ -1,5 +1,4 @@
 use bevy::{
-    math::Vec3Swizzles,
     prelude::*,
     window::{close_on_esc, WindowMode},
 };
@@ -7,6 +6,8 @@ use bevy_prototype_lyon::prelude::*;
 
 const WIDTH: f32 = 852.0;
 const HEIGHT: f32 = 480.0;
+
+const BALL_RADIUS: f32 = 8.0;
 
 // main function
 fn main() {
@@ -119,7 +120,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 // spawns the ball
 fn spawn_ball(mut commands: Commands) {
     let shape = shapes::Circle {
-        radius: 8.0,
+        radius: BALL_RADIUS,
         ..default()
     };
 
@@ -130,7 +131,8 @@ fn spawn_ball(mut commands: Commands) {
             Transform::default(),
         ))
         .insert(Mass(10.0))
-        .insert(Velocity { x: 50.0, y: 0.0 });
+        .insert(Velocity { x: 50.0, y: 0.0 })
+        .insert(Ball);
 }
 
 // spawns the two players
@@ -216,10 +218,10 @@ fn controls(
 
 /// checks if the ball is out of bounds and if so emit a score event and reset the ball
 fn out_of_bounds_detector(
-    query: Query<(&Ball, &mut Transform)>,
+    mut query: Query<(&Ball, &mut Transform)>,
     mut event: EventWriter<ScoreEvent>,
 ) {
-    let (_ball, mut transform) = query.single();
+    let (_ball, mut transform) = query.single_mut();
 
     // check and emit event
     if transform.translation.x > WIDTH / 2.0 {
@@ -237,11 +239,17 @@ fn out_of_bounds_detector(
 }
 
 /// checks if the ball collides with either the top, bottom or one of the players and if so, reflect the ball
-fn collision_detector() {
-    todo!()
+fn collision_detector(mut query: Query<(&Ball, &Transform, &mut Mass)>) {
+    let (_ball, transform, mut mass) = query.single_mut();
+
+    if transform.translation.y + BALL_RADIUS > HEIGHT / 2.0
+        || transform.translation.y - BALL_RADIUS < -(HEIGHT / 2.0)
+    {
+        mass.0 *= -1.0;
+    }
 }
 
 /// listen for score changes and react to them
 fn scoreboard_changer(event: EventReader<ScoreEvent>) {
-    todo!()
+    // todo!()
 }
